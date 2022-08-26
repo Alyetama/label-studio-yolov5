@@ -56,6 +56,7 @@ class PrepareDataset:
         }
         label_studio_host = os.environ['LABEL_STUDIO_HOST'].rstrip('/') + '/'
 
+        print('Requesting project data in YOLO format...')
         r = requests.get(
             f'{label_studio_host}/api/projects/{self.project_id}/export?exportType=YOLO',  # noqa E501
             headers=headers)
@@ -67,6 +68,7 @@ class PrepareDataset:
         shutil.unpack_archive(f'{self.dataset_path}.zip', self.dataset_path)
         Path(f'{self.dataset_path}.zip').unlink()
 
+        print('Requesting project data in JSON format...')
         r = requests.get(
             f'{label_studio_host}/api/projects/{self.project_id}/export?exportType=JSON',  # noqa E501
             headers=headers)
