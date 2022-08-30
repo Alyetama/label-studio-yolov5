@@ -39,7 +39,9 @@ class PrepareDataset:
 
         @ray.remote
         def download(task: dict):
-            img_url = task['data']['image'].replace('s3://', s3_endpoint)
+            img_url = task['data']['image']
+            if img_url.startswith('s3://') and s3_endpoint:
+                img_url = img_url.replace('s3://', s3_endpoint)
             fname = self.dataset_path / 'images' / Path(img_url).name
             if fname.exists():
                 return
@@ -47,9 +49,9 @@ class PrepareDataset:
                 res = requests.get(img_url)
                 fp.write(res.content)
 
-        load_dotenv()
-
-        s3_endpoint = os.environ['S3_ENDPOINT'].rstrip('/') + '/'
+        s3_endpoint = os.getenv('S3_ENDPOINT')
+        if s3_endpoint:
+            s3_endpoint = s3_endpoint.rstrip('/') + '/'
 
         headers = {
             'Authorization': f'Token {os.environ["LABEL_STUDIO_TOKEN"]}'
@@ -143,6 +145,7 @@ def _opts() -> argparse.Namespace:
 
 
 if __name__ == '__main__':
+    load_dotenv()
     args = _opts()
     pd = PrepareDataset(project_id=args.project_id,
                         dataset_path=args.dataset_path,
